@@ -1,0 +1,56 @@
+{
+  "name": "pl_ingest_contacts",
+  "properties": {
+    "description": "FlowBridge: ingest contacts from REST API → ADLS bronze layer",
+    "activities": [
+      {
+        "name": "CopyContactsFromAPI",
+        "type": "Copy",
+        "dependsOn": [],
+        "typeProperties": {
+          "source": {
+            "type": "RestSource",
+            "httpRequestTimeout": "00:01:40",
+            "requestInterval": "00.00:00:00.010",
+            "requestMethod": "GET",
+            "paginationRules": {
+              "supportRFC5988": "true"
+            }
+          },
+          "sink": {
+            "type": "JsonSink",
+            "storeSettings": {
+              "type": "AzureBlobFSWriteSettings"
+            },
+            "formatSettings": {
+              "type": "JsonWriteSettings",
+              "filePattern": "setOfObjects"
+            }
+          },
+          "enableStaging": false
+        },
+        "inputs": [
+          {
+            "referenceName": "ds_rest_contacts_api",
+            "type": "DatasetReference"
+          }
+        ],
+        "outputs": [
+          {
+            "referenceName": "ds_adls_bronze_contacts",
+            "type": "DatasetReference",
+            "parameters": {
+              "folderDate": {
+                "value": "@formatDateTime(utcNow(),'yyyy-MM-dd')",
+                "type": "Expression"
+              }
+            }
+          }
+        ]
+      }
+    ],
+    "parameters": {},
+    "annotations": ["FlowBridge", "ingestion", "contacts"],
+    "lastPublishTime": "2026-05-10T00:00:00Z"
+  }
+}

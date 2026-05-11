@@ -7,96 +7,148 @@
 [![Python](https://img.shields.io/badge/python-3.11-blue)]()
 [![Azure](https://img.shields.io/badge/azure-data%20factory%20%7C%20functions%20%7C%20sql-0078d4)]()
 
-## What is this?
+## Live Demo
 
-FlowBridge is an AI-native data sync platform for SMEs — think Zapier but powered by Azure.
-This repo contains both:
+🌐 https://ambikarompy8-lgtm.github.io/flowbridge-azure-pipeline/
 
-1. **The product** — FlowBridge UI (dashboard, AI sync builder, competitor analysis)
-2. **The Azure backend** — the ETL pipeline that actually runs every sync
+---
 
-**Every FlowBridge feature maps to an Azure service:**
+## Overview
 
-| FlowBridge feature | Azure service |
-|---|---|
-| Sync scheduler | Azure Data Factory (ADF) — schedule triggers |
-| Raw sync buffer | Azure Data Lake Gen2 — bronze layer |
-| AI field mapper | Azure Functions (Python 3.11) — blob-triggered |
-| Production datastore | Azure SQL Database — gold layer (upsert) |
-| Self-healing monitor | Azure Monitor + Log Analytics + KQL |
+FlowBridge is an AI-native workflow automation and cloud analytics platform designed for SMEs to streamline data synchronization, ETL processing, and operational reporting using Azure-native infrastructure.
+
+This repository contains both:
+
+1. **The product layer** — FlowBridge UI (dashboard, workflow builder, analytics interface)
+2. **The cloud backend** — scalable ETL and analytics pipelines powering workflow orchestration and operational reporting
+
+---
+
+## Azure Service Mapping
+
+| FlowBridge Component         | Azure Service                       |
+| ---------------------------- | ----------------------------------- |
+| Workflow scheduling          | Azure Data Factory (ADF)            |
+| Raw data ingestion           | Azure Data Lake Gen2 (Bronze Layer) |
+| Event-driven transformations | Azure Functions (Python 3.11)       |
+| Analytics datastore          | Azure SQL Database (Gold Layer)     |
+| Monitoring & observability   | Azure Monitor + Log Analytics + KQL |
+
+---
 
 ## Architecture
 
-```
-Source API (HubSpot / Sheets / Shopify)
-    │
-    ▼
-Azure Data Factory ──── schedule trigger (hourly / daily / on-event)
-    │
-    ▼
-ADLS Gen2: bronze/contacts/YYYY-MM-DD/raw.json   ← immutable raw data
-    │ (blob trigger)
-    ▼
-Azure Functions: transform_contacts.py            ← field mapping + cleanse
-    │
-    ▼
-ADLS Gen2: silver/contacts/YYYY-MM-DD/clean_*.json
-    │
-    ▼
-Azure SQL Database: dbo.contacts                  ← gold layer (upsert)
-    │
-    ▼
-Azure Monitor + Log Analytics                     ← KQL alerts + self-heal
+```text id="z01vwx"
+Source APIs (HubSpot / Sheets / Shopify)
+                │
+                ▼
+Azure Data Factory (ADF)
+Scheduled + Triggered Pipelines
+                │
+                ▼
+Azure Data Lake Gen2
+Bronze Layer (Raw Storage)
+                │
+                ▼
+Azure Functions (Python 3.11)
+Transformation + Field Mapping
+                │
+                ▼
+Azure Data Lake Gen2
+Silver Layer (Cleaned Data)
+                │
+                ▼
+Azure SQL Database
+Analytics + Reporting Layer
+                │
+                ▼
+Power BI + Operational Dashboards
 ```
 
-## Quick deploy
+---
 
-```bash
-# Prerequisites: az login, func --version, Python 3.11
-git clone https://github.com/YOUR_USERNAME/flowbridge-azure-pipeline
+## Frontend Dashboard
+
+The FlowBridge frontend includes:
+
+* Pipeline activity monitoring
+* AI-assisted workflow builder concepts
+* Azure service visualization
+* SQL-backed operational analytics
+* Enterprise-style access management
+* Cloud workflow orchestration dashboard
+
+---
+
+## Quick Deploy
+
+```bash id="s91krm"
+# Prerequisites: Azure CLI, Python 3.11, Azure Functions Core Tools
+
+git clone https://github.com/ambikarompy8-lgtm/flowbridge-azure-pipeline
 cd flowbridge-azure-pipeline
+
 chmod +x infrastructure/setup.sh
 ./infrastructure/setup.sh
 ```
 
-The script creates all Azure resources (~5 min). Total cost: ~$0–5/month on free tier.
+The deployment provisions Azure infrastructure including Azure SQL Database, Azure Data Factory, Azure Data Lake Gen2, Azure Functions, and monitoring services.
 
-## Run tests locally
+---
 
-```bash
+## Run Tests Locally
+
+```bash id="d20qaz"
 pip install pytest
 pytest functions/tests/ -v
-# 14 tests, 0 failures
 ```
 
-## Project structure
+---
 
-```
+## Project Structure
+
+```text id="n83xpe"
 flowbridge-azure-pipeline/
+│
+├── index.html                     # Frontend dashboard UI
 ├── README.md
-├── infrastructure/
-│   └── setup.sh              # one-command Azure deploy
-├── functions/
-│   ├── transform_contacts/
-│   │   ├── function_app.py   # Python blob-trigger transform
-│   │   └── requirements.txt
-│   └── tests/
-│       └── test_transform.py # 14 unit tests
-├── pipelines/
-│   └── pl_ingest_contacts.json  # ADF pipeline JSON
-├── sql/
-│   └── schema.sql            # contacts table + upsert SP + indexes
-└── .github/
-    └── workflows/
-        └── deploy.yml        # CI/CD: test → deploy Function → publish ADF
+├── main.tf                        # Terraform infrastructure
+├── outputs.tf
+├── variables.tf
+├── schema.sql                     # Azure SQL schema
+├── powerbi_views.sql              # Analytics views
+├── requirements.txt
+├── setup.sh                       # Azure deployment script
+│
+├── function_app.py                # Azure Functions
+├── event_hub_streaming.py
+├── hubspot_connector.py
+├── xero_connector.py
+│
+├── pl_ingest_contacts.json        # ADF pipeline
+└── deploy.yml                     # CI/CD workflow
 ```
 
+---
 
+## Business Context
 
-## Market context
+Disconnected systems and manual workflows remain major operational challenges for SMEs. FlowBridge demonstrates how Azure-native automation pipelines can streamline integrations, analytics, and operational reporting using scalable cloud infrastructure.
 
-- $26B workflow automation market in 2026 (Mordor Intelligence)
-- 96 min/day wasted per SME owner on manual data work (Slack, 2024)
-- 57% of SMBs cite disconnected systems as #1 blocker (HubSpot, 2025)
-- Only 4% of businesses have fully automated any workflow (2026)
+---
+
+## Future Enhancements
+
+* Real-time streaming analytics
+* OAuth connector integrations
+* Embedded Power BI dashboards
+* Role-based authentication
+* AI-powered sync recommendations
+* Advanced monitoring dashboards
+* Automated anomaly detection
+* Live Azure Functions API layer
+
+```
+```
+
 

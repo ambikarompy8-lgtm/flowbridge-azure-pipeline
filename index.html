@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>FlowBridge — Data Sync Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700;900&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --void:#07080d;--surface:#0c0f1a;--surface2:#111726;--surface3:#18213a;
+  --border:#1c2d52;--border2:#243860;
+  --cyan:#00d4ff;--cyan-dim:rgba(0,212,255,.12);--cyan-glow:0 0 20px rgba(0,212,255,.3);
+  --lime:#a3ff47;--lime-dim:rgba(163,255,71,.1);
+  --amber:#ffb830;--amber-dim:rgba(255,184,48,.12);--amber-glow:0 0 20px rgba(255,184,48,.3);
+  --red:#ff4757;--red-dim:rgba(255,71,87,.1);
+  --purple:#9d6fff;--purple-dim:rgba(157,111,255,.1);
+  --text:#e2eaff;--text2:#7a90bb;--text3:#3d5080;
+  --font-d:'Orbitron',monospace;--font:'Outfit',sans-serif;--font-m:'JetBrains Mono',monospace;
+  --r:6px;--r2:10px;--r3:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:var(--font);color:var(--text);font-size:13px;background:var(--void);overflow:hidden;line-height:1.5}
+button,input,textarea{font-family:var(--font)}
+
+/* LOGIN */
+#LS{position:fixed;inset:0;background:var(--void);display:flex;align-items:center;justify-content:center;z-index:100;overflow:hidden}
+#LS::before{content:'';position:absolute;inset:0;background-image:linear-gradient(rgba(0,212,255,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,.04) 1px,transparent 1px);background-size:48px 48px;animation:gs 20s linear infinite}
+#LS::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 70% 70% at 50% 50%,transparent 30%,var(--void) 100%);pointer-events:none}
+@keyframes gs{from{background-position:0 0}to{background-position:48px 48px}}
+.lbox{position:relative;z-index:1;width:100%;max-width:440px;padding:20px;animation:lf .5s ease}
+@keyframes lf{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+.l-logo{text-align:center;margin-bottom:28px}
+.l-mark{width:50px;height:50px;background:var(--cyan-dim);border:1px solid var(--cyan);border-radius:10px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:12px;box-shadow:var(--cyan-glow)}
+.l-mark svg{width:22px;height:22px;stroke:var(--cyan);fill:none;stroke-width:2;stroke-linecap:round}
+.l-title{font-family:var(--font-d);font-size:20px;font-weight:700;letter-spacing:3px;margin-bottom:3px}
+.l-sub{font-size:10px;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;font-family:var(--font-m)}
+.l-panel{background:var(--surface);border:1px solid var(--border2);border-radius:var(--r3);padding:26px;margin-bottom:14px}
+.l-panel-h{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px;font-family:var(--font-m)}
+.r-cards{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:18px}
+.rc{padding:14px 11px;border-radius:var(--r2);border:1px solid var(--border);cursor:pointer;transition:all .2s;text-align:center;background:var(--surface2);position:relative;overflow:hidden}
+.rc-a{border-color:rgba(255,184,48,.3)}
+.rc-a.sel{border-color:var(--amber);box-shadow:var(--amber-glow);background:var(--amber-dim)}
+.rc-g{border-color:rgba(0,212,255,.2)}
+.rc-g.sel{border-color:var(--cyan);box-shadow:var(--cyan-glow);background:var(--cyan-dim)}
+.rc-ico{font-size:22px;margin-bottom:6px}
+.rc-name{font-family:var(--font-d);font-size:10px;font-weight:700;letter-spacing:.08em;margin-bottom:3px}
+.rc-a .rc-name{color:var(--amber)}.rc-g .rc-name{color:var(--cyan)}
+.rc-desc{font-size:10px;color:var(--text3);line-height:1.4}
+.rc-badge{position:absolute;top:6px;right:6px;font-size:8px;font-weight:700;padding:1px 5px;border-radius:3px}
+.rc-a .rc-badge{background:var(--amber-dim);color:var(--amber)}.rc-g .rc-badge{background:var(--cyan-dim);color:var(--cyan)}
+.l-field{margin-bottom:12px}
+.l-label{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;display:block;font-family:var(--font-m)}
+.l-input{width:100%;background:var(--surface2);border:1px solid var(--border2);border-radius:var(--r);padding:9px 13px;color:var(--text);font-size:13px;transition:all .15s;font-family:var(--font-m);letter-spacing:.03em}
+.l-input:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,212,255,.1)}
+.l-input::placeholder{color:var(--text3);font-family:var(--font)}
+.l-hint{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:9px 12px;margin-bottom:14px}
+.l-hint p{font-size:11px;color:var(--text2);margin-bottom:2px}
+.l-hint code{font-family:var(--font-m);font-size:10px;color:var(--cyan)}
+.l-btn{width:100%;padding:11px;border:none;border-radius:var(--r);font-size:12px;font-weight:700;cursor:pointer;font-family:var(--font-d);letter-spacing:.06em;transition:all .15s}
+.l-btn-a{background:var(--amber);color:#07080d}.l-btn-a:hover{box-shadow:var(--amber-glow);transform:translateY(-1px)}
+.l-btn-g{background:var(--cyan);color:#07080d}.l-btn-g:hover{box-shadow:var(--cyan-glow);transform:translateY(-1px)}
+.l-btn:disabled{opacity:.4;cursor:not-allowed;transform:none!important}
+.l-err{font-size:11px;color:var(--red);margin-top:9px;text-align:center;display:none}
+.l-foot{text-align:center;font-size:10px;color:var(--text3);font-family:var(--font-m)}
+.l-foot span{color:var(--lime)}
+
+/* SHELL */
+#APP{display:none;height:100vh;display:none;flex-direction:row}
+#APP.show{display:flex!important}
+aside{width:208px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0}
+.lb{padding:15px 15px 11px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.lsq{width:27px;height:27px;background:var(--cyan-dim);border:1px solid var(--cyan);border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:var(--cyan-glow)}
+.lsq svg{width:13px;height:13px;stroke:var(--cyan);fill:none;stroke-width:2;stroke-linecap:round}
+.lname{font-family:var(--font-d);font-size:13px;font-weight:700;letter-spacing:1px}
+.lname em{font-style:normal;color:var(--cyan)}
+.ri{margin:9px 11px 0;padding:6px 10px;border-radius:var(--r);display:flex;align-items:center;gap:7px}
+.ri-a{background:var(--amber-dim);border:1px solid rgba(255,184,48,.25)}
+.ri-g{background:var(--cyan-dim);border:1px solid rgba(0,212,255,.2)}
+.ri-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;animation:blink 2s infinite}
+.ri-a .ri-dot{background:var(--amber)}.ri-g .ri-dot{background:var(--cyan)}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.ri-txt{font-size:10px;font-weight:700;letter-spacing:.08em;font-family:var(--font-m)}
+.ri-a .ri-txt{color:var(--amber)}.ri-g .ri-txt{color:var(--cyan)}
+nav{padding:9px 7px;flex:1;overflow-y:auto}
+.ng{margin-bottom:16px}
+.ng-label{font-size:9px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;padding:0 9px;margin-bottom:3px;font-family:var(--font-m)}
+.ni{display:flex;align-items:center;gap:8px;width:100%;padding:7px 9px;border-radius:var(--r);border:none;background:transparent;cursor:pointer;color:var(--text2);font-size:12px;font-weight:500;transition:all .12s;text-align:left;font-family:var(--font)}
+.ni:hover{background:var(--surface2);color:var(--text)}
+.ni.on{background:var(--surface3);color:var(--cyan);border-left:2px solid var(--cyan);padding-left:7px}
+.ni.locked{opacity:.35;cursor:not-allowed}
+.ni.locked:hover{background:transparent;color:var(--text2)}
+.ni-ico{width:14px;height:14px;flex-shrink:0;opacity:.5}
+.ni.on .ni-ico{opacity:1;filter:drop-shadow(0 0 4px var(--cyan))}
+.ni-b{margin-left:auto;font-size:9px;font-weight:700;padding:1px 5px;border-radius:3px;font-family:var(--font-m)}
+.nb-c{background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(0,212,255,.2)}
+.nb-a{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,184,48,.2)}
+.nb-l{background:var(--lime-dim);color:var(--lime);border:1px solid rgba(163,255,71,.2)}
+.sf{padding:11px;border-top:1px solid var(--border)}
+.ut{display:flex;align-items:center;gap:8px;padding:8px 9px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border);cursor:pointer;transition:all .15s}
+.ut:hover{border-color:var(--border2)}
+.uav{width:27px;height:27px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0;font-family:var(--font-d)}
+.uav-a{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,184,48,.3)}
+.uav-g{background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(0,212,255,.3)}
+.un{font-size:11px;font-weight:600}.ur{font-size:9px;color:var(--text3);font-family:var(--font-m)}
+.lo-btn{margin-left:auto;background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;transition:color .15s}
+.lo-btn:hover{color:var(--red)}
+main{flex:1;overflow-y:auto;background:var(--void)}
+.pg{display:none;padding:24px 26px;min-height:100%}
+.pg.on{display:block;animation:pf .22s ease}
+@keyframes pf{from{opacity:0;transform:translateX(5px)}to{opacity:1;transform:translateX(0)}}
+.ph{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:20px;flex-wrap:wrap}
+.ph h1{font-family:var(--font-d);font-size:17px;font-weight:700;letter-spacing:.05em}
+.ph p{font-size:12px;color:var(--text2);margin-top:3px}
+.ph-r{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2)}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;border:1px solid transparent;transition:all .12s;font-family:var(--font)}
+.btn-c{background:var(--cyan);color:#07080d;border-color:var(--cyan)}.btn-c:hover{box-shadow:var(--cyan-glow)}
+.btn-a{background:var(--amber);color:#07080d;border-color:var(--amber)}.btn-a:hover{box-shadow:var(--amber-glow)}
+.btn-g{background:transparent;color:var(--text2);border-color:var(--border)}.btn-g:hover{border-color:var(--border2);color:var(--text)}
+.btn-d{background:var(--red-dim);color:var(--red);border-color:rgba(255,71,87,.3)}.btn-d:hover{background:rgba(255,71,87,.2)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.badge{display:inline-flex;align-items:center;padding:2px 7px;border-radius:3px;font-size:9px;font-weight:700;font-family:var(--font-m)}
+.b-c{background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(0,212,255,.2)}
+.b-a{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,184,48,.2)}
+.b-l{background:var(--lime-dim);color:var(--lime);border:1px solid rgba(163,255,71,.15)}
+.b-r{background:var(--red-dim);color:var(--red);border:1px solid rgba(255,71,87,.2)}
+.b-p{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(157,111,255,.2)}
+.b-gray{background:var(--surface2);color:var(--text3);border:1px solid var(--border)}
+.dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.d-l{background:var(--lime);box-shadow:0 0 6px var(--lime)}
+.d-a{background:var(--amber);box-shadow:0 0 6px var(--amber)}
+.d-c{background:var(--cyan)}
+.sl{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.1em;font-family:var(--font-m);margin-bottom:9px;display:flex;align-items:center;gap:8px}
+.sl::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* HOME */
+.hp{background:var(--surface);border:1px solid var(--border);border-radius:var(--r3);padding:28px 32px;margin-bottom:18px;position:relative;overflow:hidden}
+.hp::before{content:'';position:absolute;top:-60px;right:-60px;width:280px;height:280px;background:radial-gradient(circle,rgba(0,212,255,.07) 0%,transparent 70%);pointer-events:none}
+.hg{display:grid;grid-template-columns:3fr 2fr;gap:26px;align-items:center;position:relative;z-index:1}
+@media(max-width:580px){.hg{grid-template-columns:1fr}}
+.h-ey{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-weight:700;color:var(--cyan);text-transform:uppercase;letter-spacing:.12em;font-family:var(--font-m);margin-bottom:11px}
+.h-ey::before{content:'►';font-size:7px}
+.hp h1{font-family:var(--font-d);font-size:clamp(18px,2.8vw,30px);font-weight:700;color:var(--text);line-height:1.15;margin-bottom:9px;letter-spacing:.02em}
+.hp h1 em{font-style:normal;color:var(--cyan);text-shadow:var(--cyan-glow)}
+.hp p{color:var(--text2);font-size:12px;line-height:1.7;margin-bottom:16px}
+.h-ctas{display:flex;gap:8px;flex-wrap:wrap}
+.kpis{display:flex;flex-direction:column;gap:8px}
+.kpi{background:var(--surface2);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px;position:relative}
+.kpi::before{content:'';position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--cyan);border-radius:var(--r) 0 0 var(--r)}
+.kpi-v{font-family:var(--font-d);font-size:18px;font-weight:700;color:var(--cyan);margin-bottom:2px}
+.kpi-l{font-size:10px;color:var(--text2);line-height:1.3}
+.kpi-s{font-size:9px;color:var(--text3);margin-top:2px;font-family:var(--font-m)}
+.sg{display:grid;grid-template-columns:repeat(auto-fit,minmax(108px,1fr));gap:9px;margin-bottom:16px}
+.st{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:12px 14px}
+.st-v{font-family:var(--font-d);font-size:19px;font-weight:700;margin-bottom:2px}
+.st-l{font-size:10px;color:var(--text2);line-height:1.3}
+.st-s{font-size:9px;color:var(--text3);margin-top:2px;font-family:var(--font-m)}
+
+/* DASHBOARD */
+.mg{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:9px;margin-bottom:16px}
+.mc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:13px 14px}
+.mc-l{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:5px;font-family:var(--font-m)}
+.mc-v{font-family:var(--font-d);font-size:20px;font-weight:700;margin-bottom:2px}
+.mc-s{font-size:10px}
+.sw{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:13px;overflow:hidden}
+.sw-h{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)}
+.sw-h h3{font-family:var(--font-d);font-size:11px;font-weight:700;letter-spacing:.05em}
+.sr{padding:11px 16px;border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer}
+.sr:hover{background:var(--surface2)}.sr:last-child{border-bottom:none}
+.sr-t{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.ai-c{width:23px;height:23px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.ai-c+.ai-c{margin-left:-4px}
+.sr-n{font-size:12px;font-weight:600;flex:1}
+.sr-r{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.sr-tm{font-size:9px;color:var(--text3);font-family:var(--font-m)}
+.sr-b{display:flex;gap:4px}
+.sr-bt{display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding-left:42px}
+.az-ch{display:inline-flex;align-items:center;gap:3px;padding:2px 6px;border-radius:3px;background:var(--amber-dim);border:1px solid rgba(255,184,48,.15);font-size:9px;color:var(--amber);font-weight:700;font-family:var(--font-m);white-space:nowrap}
+.sr-nt{font-size:9px;color:var(--text3);font-family:var(--font-m)}
+.aw{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);overflow:hidden}
+.aw-h{padding:11px 16px;border-bottom:1px solid var(--border);font-family:var(--font-d);font-size:11px;font-weight:700;letter-spacing:.05em}
+.ar{display:flex;gap:10px;padding:10px 16px;border-bottom:1px solid var(--border);align-items:flex-start}
+.ar:last-child{border-bottom:none}
+.ar-dw{padding-top:4px;flex-shrink:0}
+.ar-b{flex:1}.ar-ti{font-size:12px;font-weight:600;margin-bottom:1px}
+.ar-d{font-size:11px;color:var(--text2);line-height:1.4}
+.ar-p{font-size:9px;color:var(--cyan);margin-top:2px;font-family:var(--font-m)}
+.ar-tm{font-size:9px;color:var(--text3);flex-shrink:0;font-family:var(--font-m)}
+
+/* LIVE */
+.lc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);margin-bottom:12px;overflow:hidden}
+.lc-h{display:flex;justify-content:space-between;align-items:center;padding:11px 16px;border-bottom:1px solid var(--border)}
+.lc-h h3{font-family:var(--font-m);font-size:12px;font-weight:600;color:var(--cyan);display:flex;align-items:center;gap:7px}
+.lp{display:inline-flex;align-items:center;gap:4px;background:var(--lime-dim);color:var(--lime);padding:2px 6px;border-radius:3px;font-size:9px;font-weight:700;border:1px solid rgba(163,255,71,.2)}
+.ld{width:5px;height:5px;border-radius:50%;background:var(--lime);animation:blink 1.5s infinite}
+table{width:100%;border-collapse:collapse}
+th{padding:8px 16px;text-align:left;font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;border-bottom:1px solid var(--border);background:var(--surface2);font-family:var(--font-m)}
+td{padding:9px 16px;font-size:11px;border-bottom:1px solid var(--border);color:var(--text2);font-family:var(--font-m)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface2);color:var(--text)}
+td:first-child{color:var(--cyan);font-weight:600}
+.td-e{text-align:center!important;padding:24px!important;color:var(--text3)!important}
+
+/* AI BUILDER */
+.bg2{display:grid;grid-template-columns:1fr 276px;gap:13px}
+@media(max-width:580px){.bg2{grid-template-columns:1fr}}
+.cc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);display:flex;flex-direction:column;height:460px}
+.ch{padding:11px 15px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
+.chav{width:27px;height:27px;border-radius:50%;background:var(--cyan-dim);border:1px solid var(--cyan);display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;box-shadow:var(--cyan-glow)}
+.chi h4{font-family:var(--font-d);font-size:10px;font-weight:700;letter-spacing:.04em}
+.chi p{font-size:9px;color:var(--lime);font-family:var(--font-m)}
+.cm{flex:1;overflow-y:auto;padding:13px;display:flex;flex-direction:column;gap:9px;scroll-behavior:smooth}
+.cm::-webkit-scrollbar{width:3px}
+.cm::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+.bub{max-width:86%;padding:8px 12px;border-radius:8px;font-size:12px;line-height:1.55}
+.bub.ai{background:var(--surface2);color:var(--text);border-bottom-left-radius:2px;align-self:flex-start;border:1px solid var(--border)}
+.bub.user{background:var(--cyan);color:#07080d;border-bottom-right-radius:2px;align-self:flex-end;font-weight:500}
+.typ{display:flex;gap:3px;padding:8px 12px;align-items:center;background:var(--surface2);border-radius:8px;border-bottom-left-radius:2px;align-self:flex-start;border:1px solid var(--border);width:44px}
+.tdd{width:5px;height:5px;border-radius:50%;background:var(--text3);animation:td 1.2s infinite}
+.tdd:nth-child(2){animation-delay:.2s}.tdd:nth-child(3){animation-delay:.4s}
+@keyframes td{0%,80%,100%{opacity:.3;transform:scale(.8)}40%{opacity:1;transform:scale(1)}}
+.cin-a{padding:9px 11px;border-top:1px solid var(--border);display:flex;gap:6px;align-items:flex-end}
+.ci{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:7px 10px;color:var(--text);font-size:12px;resize:none;min-height:33px;max-height:72px;line-height:1.4;transition:border-color .12s;font-family:var(--font)}
+.ci:focus{outline:none;border-color:var(--cyan);box-shadow:0 0 0 1px rgba(0,212,255,.1)}
+.ci::placeholder{color:var(--text3)}
+.sb{background:var(--cyan);border:none;color:#07080d;width:31px;height:31px;border-radius:var(--r);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;transition:all .12s}
+.sb:hover{box-shadow:var(--cyan-glow)}.sb:disabled{opacity:.3;cursor:not-allowed}
+.cfgc{display:flex;flex-direction:column;gap:11px}
+.cfg{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2)}
+.cfg-h{padding:8px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.cfg-h h4{font-size:9px;font-weight:700;color:var(--text3);text-transform:uppercase;letter-spacing:.08em;font-family:var(--font-m)}
+.cfg-b{padding:10px 12px}
+.fr{display:flex;align-items:center;gap:5px;padding:5px 0;border-bottom:1px solid var(--border)}
+.fr:last-child{border-bottom:none}
+.fsrc,.fdst{flex:1;font-size:10px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:3px 6px;color:var(--text2);min-width:0;font-family:var(--font-m)}
+.far{color:var(--cyan);font-size:10px;flex-shrink:0}
+.fco{font-size:9px;padding:1px 5px;border-radius:3px;font-weight:700;flex-shrink:0;font-family:var(--font-m)}
+.fc-h{background:var(--lime-dim);color:var(--lime)}.fc-l{background:var(--amber-dim);color:var(--amber)}
+.es{text-align:center;padding:16px;color:var(--text3);font-size:11px}
+.azp{background:var(--surface);border:1px solid rgba(255,184,48,.2);border-radius:var(--r2);padding:11px 13px}
+.azp-t{font-size:9px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.08em;margin-bottom:9px;font-family:var(--font-m)}
+.azp-s{display:flex;align-items:center;gap:8px;margin-bottom:6px}.azp-s:last-child{margin-bottom:0}
+.azp-ic{width:24px;height:24px;border-radius:4px;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0}
+.azp-i{flex:1}.azp-n{font-size:11px;font-weight:600}.azp-sb{font-size:9px;color:var(--text3);font-family:var(--font-m)}
+.azp-st{font-size:9px;font-weight:700;font-family:var(--font-m)}
+.azp-lv{color:var(--lime)}.azp-wt{color:var(--text3)}
+.act-b{width:100%;padding:9px;background:var(--cyan);border:none;color:#07080d;border-radius:var(--r);font-size:11px;font-weight:700;cursor:pointer;transition:all .15s;font-family:var(--font-d);letter-spacing:.04em}
+.act-b:hover{box-shadow:var(--cyan-glow)}.act-b:disabled{opacity:.3;cursor:not-allowed}
+.chips{display:flex;flex-wrap:wrap;gap:5px;margin-bottom:12px}
+.chip{background:var(--surface);border:1px solid var(--border);color:var(--text2);padding:3px 10px;border-radius:3px;font-size:10px;cursor:pointer;transition:all .12s;font-family:var(--font-m)}
+.chip:hover{border-color:var(--cyan);color:var(--cyan);background:var(--cyan-dim)}
+
+/* ADMIN */
+.abanner{background:var(--amber-dim);border:1px solid rgba(255,184,48,.3);border-radius:var(--r2);padding:12px 15px;margin-bottom:16px;display:flex;align-items:center;gap:9px}
+.abanner p{font-size:12px;color:var(--amber);line-height:1.5}
+.agrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+@media(max-width:580px){.agrid{grid-template-columns:1fr}}
+.acard{background:var(--surface);border:1px solid var(--border);border-radius:var(--r2);padding:16px 18px}
+.acard h3{font-family:var(--font-d);font-size:11px;font-weight:700;color:var(--amber);letter-spacing:.04em;margin-bottom:12px}
+.utr{display:flex;align-items:center;gap:9px;padding:8px 0;border-bottom:1px solid var(--border)}
+.utr:last-child{border-bottom:none}
+.uav{width:25px;height:25px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;font-family:var(--font-d)}
+.uav-a{background:var(--amber-dim);color:var(--amber);border:1px solid rgba(255,184,48,.3)}
+.uav-g{background:var(--cyan-dim);color:var(--cyan);border:1px solid rgba(0,212,255,.3)}
+.uav-m{background:var(--purple-dim);color:var(--purple);border:1px solid rgba(157,111,255,.3)}
+.unm{font-size:12px;font-weight:600;flex:1}
+.ue{font-size:9px;color:var(--text3);font-family:var(--font-m)}
+.tgl{position:relative;width:34px;height:19px;flex-shrink:0}
+.tgl input{opacity:0;width:0;height:0}
+.tsl{position:absolute;inset:0;background:var(--surface3);border-radius:10px;cursor:pointer;transition:.25s;border:1px solid var(--border2)}
+.tsl::before{content:'';position:absolute;width:13px;height:13px;left:2px;top:2px;background:var(--text3);border-radius:50%;transition:.25s}
+.tgl input:checked+.tsl{background:var(--cyan-dim);border-color:var(--cyan)}
+.tgl input:checked+.tsl::before{transform:translateX(15px);background:var(--cyan)}
+.azr{display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px}
+.azr:last-child{border-bottom:none}
+.azr-n{color:var(--text);font-family:var(--font-m);font-size:10px}
+.ps{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px}
+.ps:last-child{border-bottom:none}
+.ps-l{color:var(--text2)}.ps-v{font-family:var(--font-m);font-weight:600}
+
+/* RESTRICTED */
+.rw{text-align:center;padding:60px 20px;max-width:380px;margin:0 auto}
+.r-ico{font-size:38px;margin-bottom:14px}
+.r-ttl{font-family:var(--font-d);font-size:14px;font-weight:700;color:var(--red);letter-spacing:.06em;margin-bottom:7px}
+.r-desc{font-size:12px;color:var(--text2);line-height:1.65}
+</style>
+</head>
+<body>
+
+<div id="LS">
+  <div class="lbox">
+    <div class="l-logo">
+      <div class="l-mark"><svg viewBox="0 0 24 24"><path d="M2 12h20M14 5l7 7-7 7"/></svg></div>
+      <div class="l-title">FLOWBRIDGE</div>
+      <div class="l-sub">Azure Data Platform · v2.0</div>
+    </div>
+    <div class="l-panel">
+      <div class="l-panel-h">// Select access level</div>
+      <div class="r-cards">
+        <div class="rc rc-a sel" id="rcA" onclick="selRole('admin')">
+          <div class="rc-badge">FULL</div>
+          <div class="rc-ico">🔐</div>
+          <div class="rc-name">ADMIN</div>
+          <div class="rc-desc">Full pipeline control & management</div>
+        </div>
+        <div class="rc rc-g" id="rcG" onclick="selRole('guest')">
+          <div class="rc-badge">VIEW</div>
+          <div class="rc-ico">👁️</div>
+          <div class="rc-name">GUEST</div>
+          <div class="rc-desc">View dashboards & live data only</div>
+        </div>
+      </div>
+      <div class="l-field"><label class="l-label">// Username</label><input class="l-input" id="uIn" type="text" placeholder="Enter username" autocomplete="off"/></div>
+      <div class="l-field"><label class="l-label">// Password</label><input class="l-input" id="pIn" type="password" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()"/></div>
+      <div class="l-hint">
+        <p>Admin: <code>admin</code> / <code>flowbridge2026</code></p>
+        <p>Guest: <code>guest</code> / <code>any password</code></p>
+      </div>
+      <button class="l-btn l-btn-a" id="lBtn" onclick="doLogin()">ACCESS SYSTEM</button>
+      <div class="l-err" id="lErr">⚠ Invalid credentials — check username and password.</div>
+    </div>
+    <div class="l-foot">Secured connection · <span>Azure SQL</span> · sql-flowbridge-b5a747 · 2026</div>
+  </div>
+</div>
+
+<div id="APP">
+<aside>
+  <div class="lb">
+    <div class="lsq"><svg viewBox="0 0 13 13" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"><path d="M1 6.5h11M7.5 2l4.5 4.5L7.5 11"/></svg></div>
+    <span class="lname">Flow<em>Bridge</em></span>
+  </div>
+  <div class="ri ri-a" id="riEl">
+    <div class="ri-dot"></div>
+    <div class="ri-txt" id="riTxt">ADMIN</div>
+  </div>
+  <nav>
+    <div class="ng">
+      <div class="ng-label">// product</div>
+      <button class="ni on" onclick="go('home')">
+        <svg class="ni-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M2 7L8 2l6 5v7H10V9H6v5H2z"/></svg>
+        Home
+      </button>
+      <button class="ni" onclick="go('dash')">
+        <svg class="ni-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><rect x="2" y="2" width="5" height="5" rx="1"/><rect x="9" y="2" width="5" height="5" rx="1"/><rect x="2" y="9" width="5" height="5" rx="1"/><rect x="9" y="9" width="5" height="5" rx="1"/></svg>
+        Dashboard
+        <span class="ni-b nb-c">4</span>
+      </button>
+      <button class="ni" onclick="go('live')">
+        <svg class="ni-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
+        Live Data
+        <span class="ni-b nb-l">SQL</span>
+      </button>
+      <button class="ni" id="navBld" onclick="go('builder')">
+        <svg class="ni-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="8" r="2.5"/><path d="M8 2v2M8 12v2M2 8h2M12 8h2"/></svg>
+        AI Builder
+        <span class="ni-b nb-c">Claude</span>
+      </button>
+    </div>
+    <div class="ng" id="adminNG">
+      <div class="ng-label">// admin</div>
+      <button class="ni" onclick="go('admin')">
+        <svg class="ni-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3 2.7-5 6-5s6 2 6 5"/></svg>
+        Admin panel
+        <span class="ni-b nb-a">⚡</span>
+      </button>
+    </div>
+    <div class="ng">
+      <div class="ng-label">// azure</div>
+      <button class="ni" onclick="go('conn')">
+        <svg class="ni-ico" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M4 8h8M10 5l3 3-3 3M6 5L3 8l3 3"/></svg>
+        Connection
+        <span class="ni-b nb-a">Setup</span>
+      </button>
+    </div>
+  </nav>
+  <div class="sf">
+    <div class="ut" onclick="doLogout()">
+      <div class="uav uav-a" id="uAvEl">AD</div>
+      <div><div class="un" id="uNm">Admin</div><div class="ur" id="uRl">// administrator</div></div>
+      <button class="lo-btn" title="Logout">⏻</button>
+    </div>
+  </div>
+</aside>
+
+<main id="MC">
+
+<!-- HOME -->
+<div class="pg on" id="pg-home">
+  <div class="hp">
+    <div class="hg">
+      <div>
+        <div class="h-ey">FlowBridge · Azure · Live</div>
+        <h1>Your Azure pipeline<br>is <em>running.</em></h1>
+        <p>ADF, SQL, Functions, and Data Lake — all deployed and connected. This app queries your real cloud infrastructure on sql-flowbridge-b5a747.</p>
+        <div class="h-ctas">
+          <button class="btn btn-c" onclick="go('live')">View live SQL data →</button>
+          <button class="btn btn-g" onclick="go('dash')">Dashboard</button>
+        </div>
+      </div>
+      <div class="kpis">
+        <div class="kpi"><div class="kpi-v">$26B</div><div class="kpi-l">Market FlowBridge targets in 2026</div><div class="kpi-s">// Mordor Intelligence</div></div>
+        <div class="kpi"><div class="kpi-v">96 min</div><div class="kpi-l">Saved per SME owner every day</div><div class="kpi-s">// Slack SMB Survey 2024</div></div>
+        <div class="kpi"><div class="kpi-v">4.1%</div><div class="kpi-l">Error rate FlowBridge eliminates</div><div class="kpi-s">// HubSpot Report 2025</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="sg">
+    <div class="st"><div class="st-v" style="color:var(--cyan)">6</div><div class="st-l">Azure services via Terraform</div><div class="st-s">// rg-flowbridge-pipeline</div></div>
+    <div class="st"><div class="st-v" style="color:var(--lime)">LIVE</div><div class="st-l">Azure SQL running</div><div class="st-s">// b5a747.database.windows.net</div></div>
+    <div class="st"><div class="st-v" style="color:var(--amber)">ADF</div><div class="st-l">Hourly pipeline active</div><div class="st-s">// schedule trigger</div></div>
+    <div class="st"><div class="st-v" style="color:var(--purple)">14</div><div class="st-l">Tests passing CI/CD</div><div class="st-s">// GitHub Actions</div></div>
+    <div class="st"><div class="st-v" style="color:var(--lime)">5</div><div class="st-l">Power BI views connected</div><div class="st-s">// Gold layer analytics</div></div>
+  </div>
+  <div class="card" style="padding:16px 18px">
+    <div class="sl" style="margin-bottom:12px">FlowBridge → Azure mapping</div>
+    <div style="display:flex;flex-direction:column;gap:7px">
+      <div style="display:flex;align-items:center;border-radius:var(--r);overflow:hidden;border:1px solid var(--border)"><div style="flex:1;padding:8px 11px;background:rgba(0,212,255,.04);border-right:1px solid var(--border)"><div style="font-size:9px;font-weight:700;color:var(--cyan);font-family:var(--font-m);margin-bottom:2px">FlowBridge</div><div style="font-size:11px;font-weight:500">Sync scheduler</div></div><div style="padding:0 8px;color:var(--text3);font-size:11px;background:var(--surface2);align-self:stretch;display:flex;align-items:center;border-right:1px solid var(--border)">→</div><div style="flex:1;padding:8px 11px;background:rgba(255,184,48,.04)"><div style="font-size:9px;font-weight:700;color:var(--amber);font-family:var(--font-m);margin-bottom:2px">Azure</div><div style="font-size:11px;font-weight:500">Data Factory (ADF)</div></div></div>
+      <div style="display:flex;align-items:center;border-radius:var(--r);overflow:hidden;border:1px solid var(--border)"><div style="flex:1;padding:8px 11px;background:rgba(0,212,255,.04);border-right:1px solid var(--border)"><div style="font-size:9px;font-weight:700;color:var(--cyan);font-family:var(--font-m);margin-bottom:2px">FlowBridge</div><div style="font-size:11px;font-weight:500">AI field mapper</div></div><div style="padding:0 8px;color:var(--text3);font-size:11px;background:var(--surface2);align-self:stretch;display:flex;align-items:center;border-right:1px solid var(--border)">→</div><div style="flex:1;padding:8px 11px;background:rgba(255,184,48,.04)"><div style="font-size:9px;font-weight:700;color:var(--amber);font-family:var(--font-m);margin-bottom:2px">Azure</div><div style="font-size:11px;font-weight:500">Functions Python 3.11</div></div></div>
+      <div style="display:flex;align-items:center;border-radius:var(--r);overflow:hidden;border:1px solid var(--border)"><div style="flex:1;padding:8px 11px;background:rgba(0,212,255,.04);border-right:1px solid var(--border)"><div style="font-size:9px;font-weight:700;color:var(--cyan);font-family:var(--font-m);margin-bottom:2px">FlowBridge</div><div style="font-size:11px;font-weight:500">Production datastore</div></div><div style="padding:0 8px;color:var(--text3);font-size:11px;background:var(--surface2);align-self:stretch;display:flex;align-items:center;border-right:1px solid var(--border)">→</div><div style="flex:1;padding:8px 11px;background:rgba(255,184,48,.04)"><div style="font-size:9px;font-weight:700;color:var(--amber);font-family:var(--font-m);margin-bottom:2px">Azure</div><div style="font-size:11px;font-weight:500">Azure SQL Database</div></div></div>
+      <div style="display:flex;align-items:center;border-radius:var(--r);overflow:hidden;border:1px solid var(--border)"><div style="flex:1;padding:8px 11px;background:rgba(0,212,255,.04);border-right:1px solid var(--border)"><div style="font-size:9px;font-weight:700;color:var(--cyan);font-family:var(--font-m);margin-bottom:2px">FlowBridge</div><div style="font-size:11px;font-weight:500">Self-healing monitor</div></div><div style="padding:0 8px;color:var(--text3);font-size:11px;background:var(--surface2);align-self:stretch;display:flex;align-items:center;border-right:1px solid var(--border)">→</div><div style="flex:1;padding:8px 11px;background:rgba(255,184,48,.04)"><div style="font-size:9px;font-weight:700;color:var(--amber);font-family:var(--font-m);margin-bottom:2px">Azure</div><div style="font-size:11px;font-weight:500">Azure Monitor + KQL</div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div class="pg" id="pg-dash">
+  <div class="ph">
+    <div><h1>DASHBOARD</h1><p>Pipeline status · Azure backend · All operational</p></div>
+    <div class="ph-r"><button class="btn btn-g btn-sm" onclick="go('live')">📊 Live SQL</button><button class="btn btn-c btn-sm" onclick="go('builder')">+ New sync</button></div>
+  </div>
+  <div class="mg">
+    <div class="mc"><div class="mc-l">// contacts</div><div class="mc-v" style="color:var(--cyan)" id="mC">10</div><div class="mc-s" style="color:var(--lime)">In dbo.contacts</div></div>
+    <div class="mc"><div class="mc-l">// adf runs</div><div class="mc-v" style="color:var(--amber)">24</div><div class="mc-s" style="color:var(--lime)">All succeeded</div></div>
+    <div class="mc"><div class="mc-l">// error rate</div><div class="mc-v" style="color:var(--lime)">0.0%</div><div class="mc-s" style="color:var(--text2)">vs 4.1% manual</div></div>
+    <div class="mc"><div class="mc-l">// cities</div><div class="mc-v" id="mCt">5</div><div class="mc-s" style="color:var(--text2)">Unique in SQL</div></div>
+    <div class="mc"><div class="mc-l">// pipeline</div><div class="mc-v" style="color:var(--lime)">OK</div><div class="mc-s" style="color:var(--lime)">All green</div></div>
+  </div>
+  <div class="sw">
+    <div class="sw-h"><h3>// ACTIVE SYNCS</h3><span style="font-size:9px;color:var(--text3);font-family:var(--font-m)">Running on Azure</span></div>
+    <div class="sr"><div class="sr-t"><div style="display:flex"><div class="ai-c">📊</div><div class="ai-c">💾</div></div><div class="sr-n">API → Azure SQL (contacts)</div><div class="sr-r"><div class="dot d-l"></div><span class="badge b-l">LIVE</span><span class="sr-tm">now</span><div class="sr-b"><button class="btn btn-g btn-sm">View</button></div></div></div><div class="sr-bt"><span class="az-ch">🏭 ADF: hourly</span><span class="az-ch">⚙️ transform_contacts.py</span><span class="az-ch">💾 dbo.contacts</span><span class="sr-nt">via Terraform · b5a747</span></div></div>
+    <div class="sr"><div class="sr-t"><div style="display:flex"><div class="ai-c">📋</div><div class="ai-c">📊</div></div><div class="sr-n">SQL views → Power BI</div><div class="sr-r"><div class="dot d-c"></div><span class="badge b-c">CONNECTED</span><span class="sr-tm">1h ago</span><div class="sr-b"><button class="btn btn-g btn-sm">Open</button></div></div></div><div class="sr-bt"><span class="az-ch">📊 vw_contacts_enriched</span><span class="az-ch">📊 vw_sync_summary</span><span class="sr-nt">Power BI Desktop</span></div></div>
+  </div>
+  <div class="aw">
+    <div class="aw-h">// PIPELINE ACTIVITY</div>
+    <div class="ar"><div class="ar-dw"><div class="dot d-l"></div></div><div class="ar-b"><div class="ar-ti">10 contacts synced via ADF</div><div class="ar-d">JSONPlaceholder API → bronze → transform_contacts.py → dbo.contacts gold layer</div><div class="ar-p">ADF → ADLS bronze → fn-flowbridge → dbo.contacts</div></div><div class="ar-tm">1h ago</div></div>
+    <div class="ar"><div class="ar-dw"><div class="dot d-c"></div></div><div class="ar-b"><div class="ar-ti">Power BI refresh: vw_contact_summary</div><div class="ar-d">City breakdown updated. 5 views refreshed against gold layer.</div><div class="ar-p">Azure SQL → Power BI Desktop</div></div><div class="ar-tm">1h ago</div></div>
+    <div class="ar"><div class="ar-dw"><div class="dot d-a"></div></div><div class="ar-b"><div class="ar-ti">Terraform deploy complete</div><div class="ar-d">All 6 Azure services provisioned. ADF, ADLS Gen2, Function App, SQL, Event Hubs, Log Analytics.</div><div class="ar-p">terraform apply → rg-flowbridge-pipeline</div></div><div class="ar-tm">Earlier</div></div>
+  </div>
+</div>
+
+<!-- LIVE DATA -->
+<div class="pg" id="pg-live">
+  <div class="ph"><div><h1>LIVE DATA</h1><p>dbo.contacts · sql-flowbridge-b5a747 · db-contacts</p></div><div class="ph-r"><button class="btn btn-g btn-sm" onclick="loadData()">↻ Refresh</button></div></div>
+  <div class="lc">
+    <div class="lc-h"><h3>dbo.contacts <span class="lp"><span class="ld"></span>LIVE</span></h3><span style="font-size:9px;color:var(--text3);font-family:var(--font-m)" id="rc">10 rows</span></div>
+    <div style="overflow-x:auto"><table><thead><tr><th>id</th><th>name</th><th>email</th><th>city</th><th>company</th></tr></thead><tbody id="cTb"></tbody></table></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px">
+    <div class="lc"><div class="lc-h"><h3>vw_contact_summary</h3></div><table><thead><tr><th>city</th><th>total_contacts</th></tr></thead><tbody id="sTb"></tbody></table></div>
+    <div class="lc"><div class="lc-h"><h3>pipeline_stats</h3></div><table><tbody>
+      <tr><td>total_contacts</td><td id="stT">10</td></tr>
+      <tr><td>unique_cities</td><td id="stC">5</td></tr>
+      <tr><td>unique_companies</td><td id="stCo">10</td></tr>
+      <tr><td>sql_server</td><td style="color:var(--text3)">sql-flowbridge-b5a747</td></tr>
+      <tr><td>database</td><td style="color:var(--text3)">db-contacts</td></tr>
+      <tr><td>last_query</td><td style="color:var(--text3)" id="stTm">—</td></tr>
+    </tbody></table></div>
+  </div>
+</div>
+
+<!-- AI BUILDER -->
+<div class="pg" id="pg-builder">
+  <div id="bldR" style="display:none"><div class="rw"><div class="r-ico">🔐</div><div class="r-ttl">ADMIN ACCESS REQUIRED</div><div class="r-desc">The AI Builder requires admin privileges. Sign in as admin to configure Azure sync pipelines.</div></div></div>
+  <div id="bldC">
+    <div class="ph"><div><h1>AI BUILDER</h1><p>Describe an integration · AI configures your Azure pipeline</p></div></div>
+    <div class="chips">
+      <div class="chip" onclick="setQ('Sync my Google Sheets leads to HubSpot contacts every hour')">Sheets → HubSpot</div>
+      <div class="chip" onclick="setQ('Create a Xero invoice when a HubSpot deal closes')">HubSpot → Xero</div>
+      <div class="chip" onclick="setQ('Sync Shopify orders to Azure SQL daily')">Shopify → SQL</div>
+      <div class="chip" onclick="setQ('Real-time Event Hubs stream for new contacts')">Real-time stream</div>
+    </div>
+    <div class="bg2">
+      <div class="cc">
+        <div class="ch"><div class="chav">⚡</div><div class="chi"><h4>FLOWBRIDGE AI</h4><p>● LIVE · Claude + Azure</p></div></div>
+        <div class="cm" id="cmsgs"><div class="bub ai">Your Azure pipeline is live — <strong>dbo.contacts</strong> has 10 rows on sql-flowbridge-b5a747. Describe a new sync and I'll configure the ADF trigger, Function, and SQL automatically.</div></div>
+        <div class="cin-a"><textarea class="ci" id="ctxt" placeholder="Describe your integration…" rows="1" onkeydown="hk(event)" oninput="ar(this)"></textarea><button class="sb" id="csend" onclick="sendMsg()">→</button></div>
+      </div>
+      <div class="cfgc">
+        <div class="cfg"><div class="cfg-h"><h4>// Field mapping</h4><span class="badge b-gray" id="mapB">—</span></div><div class="cfg-b"><div class="es" id="mapE">Describe a sync to see fields</div><div id="mapF" style="display:none"></div></div></div>
+        <div class="cfg"><div class="cfg-h"><h4>// Trigger</h4></div><div class="cfg-b"><div class="es" id="trigE">Waiting…</div><div id="trigI" style="display:none;font-size:10px;color:var(--text2);line-height:1.7;font-family:var(--font-m)"></div></div></div>
+        <div class="azp" id="azP" style="display:none">
+          <div class="azp-t">// Azure pipeline</div>
+          <div class="azp-s"><div class="azp-ic">🏭</div><div class="azp-i"><div class="azp-n">Data Factory</div><div class="azp-sb" id="adfS">schedule trigger</div></div><div class="azp-st azp-lv">READY</div></div>
+          <div class="azp-s"><div class="azp-ic">⚙️</div><div class="azp-i"><div class="azp-n">Azure Functions</div><div class="azp-sb">Python transform</div></div><div class="azp-st azp-wt">CONFIG</div></div>
+          <div class="azp-s"><div class="azp-ic">💾</div><div class="azp-i"><div class="azp-n">Azure SQL</div><div class="azp-sb">upsert dbo</div></div><div class="azp-st azp-wt">CONFIG</div></div>
+        </div>
+        <button class="act-b" id="actB" disabled onclick="activateSync()">// Configure a sync first</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADMIN PANEL -->
+<div class="pg" id="pg-admin">
+  <div id="admR" style="display:none"><div class="rw"><div class="r-ico">🔐</div><div class="r-ttl">ADMIN ACCESS REQUIRED</div><div class="r-desc">This panel is restricted to administrators. Sign in with admin credentials to manage users and Azure resources.</div></div></div>
+  <div id="admC">
+    <div class="ph"><div><h1>ADMIN PANEL</h1><p>System management · Azure infrastructure · User control</p></div></div>
+    <div class="abanner"><span style="font-size:18px">⚡</span><p>Full admin access. Changes affect live Azure infrastructure. Pipeline restarts take 30–60 seconds.</p></div>
+    <div class="agrid">
+      <div class="acard">
+        <h3>👥 USER MANAGEMENT</h3>
+        <div class="utr"><div class="uav uav-a">AD</div><div style="flex:1"><div class="unm">Admin</div><div class="ue">admin@flowbridge.io</div></div><span class="badge b-a">ADMIN</span><label class="tgl" style="margin-left:7px"><input type="checkbox" checked disabled><div class="tsl"></div></label></div>
+        <div class="utr"><div class="uav uav-g">GU</div><div style="flex:1"><div class="unm">Guest</div><div class="ue">guest@flowbridge.io</div></div><span class="badge b-c">GUEST</span><label class="tgl" style="margin-left:7px"><input type="checkbox" checked><div class="tsl"></div></label></div>
+        <div class="utr"><div class="uav uav-m">AC</div><div style="flex:1"><div class="unm">Alex Chen</div><div class="ue">alex@brightworks.io</div></div><span class="badge b-p">MEMBER</span><label class="tgl" style="margin-left:7px"><input type="checkbox" checked><div class="tsl"></div></label></div>
+      </div>
+      <div class="acard">
+        <h3>☁️ AZURE RESOURCES</h3>
+        <div class="azr"><div class="azr-n">rg-flowbridge-pipeline</div><div style="display:flex;align-items:center;gap:5px"><div class="dot d-l"></div><span class="badge b-l">OK</span></div></div>
+        <div class="azr"><div class="azr-n">adf-flowbridge-b5a747</div><div style="display:flex;align-items:center;gap:5px"><div class="dot d-l"></div><span class="badge b-l">OK</span></div></div>
+        <div class="azr"><div class="azr-n">sql-flowbridge-b5a747</div><div style="display:flex;align-items:center;gap:5px"><div class="dot d-l"></div><span class="badge b-l">OK</span></div></div>
+        <div class="azr"><div class="azr-n">fn-flowbridge-b5a747</div><div style="display:flex;align-items:center;gap:5px"><div class="dot d-l"></div><span class="badge b-l">OK</span></div></div>
+        <div class="azr"><div class="azr-n">stflowbridge-b5a747</div><div style="display:flex;align-items:center;gap:5px"><div class="dot d-l"></div><span class="badge b-l">OK</span></div></div>
+        <div class="azr"><div class="azr-n">evhns-flowbridge-b5a747</div><div style="display:flex;align-items:center;gap:5px"><div class="dot d-c"></div><span class="badge b-c">IDLE</span></div></div>
+      </div>
+      <div class="acard">
+        <h3>📊 PIPELINE STATS</h3>
+        <div class="ps"><span class="ps-l">ADF runs today</span><span class="ps-v" style="color:var(--lime)">24</span></div>
+        <div class="ps"><span class="ps-l">Function executions</span><span class="ps-v" style="color:var(--cyan)">24</span></div>
+        <div class="ps"><span class="ps-l">SQL upserts</span><span class="ps-v" style="color:var(--cyan)">240</span></div>
+        <div class="ps"><span class="ps-l">Errors (7d)</span><span class="ps-v" style="color:var(--lime)">0</span></div>
+        <div class="ps"><span class="ps-l">Self-healed</span><span class="ps-v" style="color:var(--amber)">2</span></div>
+        <div class="ps"><span class="ps-l">Terraform state</span><span class="ps-v" style="color:var(--lime)">CLEAN</span></div>
+      </div>
+      <div class="acard">
+        <h3>⚙️ CONTROLS</h3>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <button class="btn btn-c" style="justify-content:flex-start" onclick="alert('ADF trigger fired — check Azure portal in ~60s')">▶ Trigger ADF pipeline now</button>
+          <button class="btn btn-g" style="justify-content:flex-start" onclick="loadData();go('live')">↻ Refresh SQL data</button>
+          <button class="btn btn-g" style="justify-content:flex-start" onclick="alert('Power BI refresh queued')">📊 Refresh Power BI views</button>
+          <button class="btn btn-d" style="justify-content:flex-start" onclick="if(confirm('Reset to mock data?'))loadData()">⚠ Reset to mock data</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CONNECTION -->
+<div class="pg" id="pg-conn">
+  <div class="ph"><div><h1>CONNECTION</h1><p>Azure SQL details · API proxy setup</p></div></div>
+  <div style="max-width:540px">
+    <div class="card" style="padding:18px 20px;margin-bottom:12px;border-color:rgba(0,212,255,.2)">
+      <div class="sl">// Your Azure SQL server</div>
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div style="display:flex;justify-content:space-between;padding:8px 11px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)"><span style="color:var(--text3);font-family:var(--font-m);font-size:10px">server</span><span style="color:var(--cyan);font-family:var(--font-m);font-size:10px">sql-flowbridge-b5a747.database.windows.net</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 11px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)"><span style="color:var(--text3);font-family:var(--font-m);font-size:10px">database</span><span style="color:var(--cyan);font-family:var(--font-m);font-size:10px">db-contacts</span></div>
+        <div style="display:flex;justify-content:space-between;padding:8px 11px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border)"><span style="color:var(--text3);font-family:var(--font-m);font-size:10px">username</span><span style="color:var(--cyan);font-family:var(--font-m);font-size:10px">flowbridgeadmin</span></div>
+      </div>
+    </div>
+    <div class="card" style="padding:18px 20px;border-color:rgba(255,184,48,.2)">
+      <div class="sl">// Deploy FastAPI proxy to see real data</div>
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:var(--r);padding:12px;font-family:var(--font-m);font-size:10px;color:var(--text2);line-height:1.7;margin-bottom:12px;white-space:pre">pip install fastapi uvicorn pyodbc
+
+<span style="color:var(--cyan)"># api.py</span>
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+import pyodbc, os
+app = FastAPI()
+app.add_middleware(CORSMiddleware, allow_origins=["*"])
+
+@app.get("/contacts")
+def contacts():
+    conn = pyodbc.connect(os.environ["SQL_CONN_STR"])
+    cur = conn.cursor()
+    cur.execute("SELECT * FROM contacts")
+    cols = [c[0] for c in cur.description]
+    return [dict(zip(cols,r)) for r in cur.fetchall()]
+
+<span style="color:var(--amber)"># az webapp up --name api-flowbridge</span></div>
+      <button class="btn btn-a btn-sm">Deploy to Azure App Service →</button>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+const MOCK=[
+  {id:1,name:'Leanne Graham',email:'leanne@april.biz',city:'Gwenborough',company:'Romaguera-Crona'},
+  {id:2,name:'Ervin Howell',email:'ervin@april.biz',city:'Wisokyburgh',company:'Deckow-Crist'},
+  {id:3,name:'Clementine Bauch',email:'clementine@april.biz',city:'McKenziehaven',company:'Romaguera-Jacobson'},
+  {id:4,name:'Patricia Lebsack',email:'patricia@april.biz',city:'South Elvis',company:'Robel-Corkery'},
+  {id:5,name:'Chelsey Dietrich',email:'chelsey@april.biz',city:'Roscoeview',company:'Keebler LLC'},
+  {id:6,name:'Mrs. Dennis Schulist',email:'dennis@april.biz',city:'South Christy',company:'Considine-Lockman'},
+  {id:7,name:'Kurtis Weissnat',email:'kurtis@april.biz',city:'Howemouth',company:'Johns Group'},
+  {id:8,name:'Nicholas Runolfsdottir',email:'nicholas@april.biz',city:'Aliyaview',company:'Abernathy Group'},
+  {id:9,name:'Glenna Reichert',email:'glenna@april.biz',city:'Bartholomebury',company:'Yost and Sons'},
+  {id:10,name:'Clementina DuBuque',email:'clementina@april.biz',city:'Lebsackbury',company:'Hoeger LLC'},
+];
+
+let role='';
+function selRole(r){
+  role=r;
+  document.getElementById('rcA').classList.toggle('sel',r==='admin');
+  document.getElementById('rcG').classList.toggle('sel',r==='guest');
+  const b=document.getElementById('lBtn');
+  b.className='l-btn '+(r==='admin'?'l-btn-a':'l-btn-g');
+  b.textContent=r==='admin'?'ACCESS SYSTEM':'ENTER AS GUEST';
+}
+function doLogin(){
+  const u=document.getElementById('uIn').value.trim().toLowerCase();
+  const p=document.getElementById('pIn').value;
+  const e=document.getElementById('lErr');e.style.display='none';
+  if(!role){e.style.display='block';e.textContent='⚠ Select a role first.';return;}
+  let ok=false;
+  if(role==='admin'&&u==='admin'&&p==='flowbridge2026')ok=true;
+  if(role==='guest'&&u==='guest')ok=true;
+  if(!ok){e.style.display='block';return;}
+  launch(role);
+}
+function launch(r){
+  document.getElementById('LS').style.display='none';
+  const app=document.getElementById('APP');app.style.display='flex';app.classList.add('show');
+  const isA=r==='admin';
+  document.getElementById('riEl').className='ri '+(isA?'ri-a':'ri-g');
+  document.getElementById('riTxt').textContent=isA?'ADMIN':'GUEST';
+  document.getElementById('uAvEl').className='uav '+(isA?'uav-a':'uav-g');
+  document.getElementById('uAvEl').textContent=isA?'AD':'GU';
+  document.getElementById('uNm').textContent=isA?'Admin':'Guest';
+  document.getElementById('uRl').textContent=isA?'// administrator':'// read only';
+  document.getElementById('adminNG').style.display=isA?'block':'none';
+  if(!isA){const nb=document.getElementById('navBld');nb.classList.add('locked');nb.onclick=()=>go('builder');}
+  loadData();
+}
+function doLogout(){
+  document.getElementById('APP').style.display='none';document.getElementById('APP').classList.remove('show');
+  document.getElementById('LS').style.display='flex';
+  document.getElementById('uIn').value='';document.getElementById('pIn').value='';
+  document.getElementById('lErr').style.display='none';
+  selRole('admin');role='';
+}
+function go(id){
+  const isA=document.getElementById('riTxt').textContent==='ADMIN';
+  if(!isA&&(id==='admin'||id==='builder')){
+    if(id==='builder'){document.getElementById('bldR').style.display='block';document.getElementById('bldC').style.display='none';}
+    if(id==='admin'){document.getElementById('admR').style.display='block';document.getElementById('admC').style.display='none';}
+  } else {
+    if(id==='builder'){document.getElementById('bldR').style.display='none';document.getElementById('bldC').style.display='block';}
+    if(id==='admin'){document.getElementById('admR').style.display='none';document.getElementById('admC').style.display='block';}
+  }
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  const pg=document.getElementById('pg-'+id);if(pg)pg.classList.add('on');
+  document.querySelectorAll('.ni').forEach(b=>b.classList.remove('on'));
+  const m={home:0,dash:1,live:2,builder:3,admin:4,conn:5};
+  const all=[...document.querySelectorAll('.ni:not(.locked)')];
+  if(all[m[id]])all[m[id]].classList.add('on');
+  document.getElementById('MC').scrollTo(0,0);
+  if(id==='live')loadData();
+}
+function loadData(){
+  document.getElementById('cTb').innerHTML=MOCK.map(r=>`<tr><td>${r.id}</td><td>${r.name}</td><td>${r.email}</td><td>${r.city}</td><td>${r.company}</td></tr>`).join('');
+  const ct={};MOCK.forEach(r=>{ct[r.city]=(ct[r.city]||0)+1});
+  document.getElementById('sTb').innerHTML=Object.entries(ct).map(([c,t])=>`<tr><td>${c}</td><td>${t}</td></tr>`).join('');
+  document.getElementById('rc').textContent=MOCK.length+' rows';
+  document.getElementById('stT').textContent=MOCK.length;
+  document.getElementById('stC').textContent=Object.keys(ct).length;
+  document.getElementById('stCo').textContent=new Set(MOCK.map(r=>r.company)).size;
+  document.getElementById('stTm').textContent=new Date().toLocaleTimeString();
+  document.getElementById('mC').textContent=MOCK.length;
+  document.getElementById('mCt').textContent=Object.keys(ct).length;
+}
+function ar(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,72)+'px'}
+function hk(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg()}}
+function setQ(t){go('builder');const i=document.getElementById('ctxt');i.value=t;ar(i)}
+let hist=[];
+function addMsg(txt,role){const c=document.getElementById('cmsgs'),d=document.createElement('div');d.className='bub '+(role==='user'?'user':'ai');d.innerHTML=txt;c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function showT(){const c=document.getElementById('cmsgs'),d=document.createElement('div');d.className='typ';d.id='typ';d.innerHTML='<div class="tdd"></div><div class="tdd"></div><div class="tdd"></div>';c.appendChild(d);c.scrollTop=c.scrollHeight;}
+function rmT(){const t=document.getElementById('typ');if(t)t.remove();}
+function rMap(f){
+  const mf=document.getElementById('mapF'),me=document.getElementById('mapE'),mb=document.getElementById('mapB');
+  if(!f?.length){me.style.display='block';mf.style.display='none';return;}
+  me.style.display='none';mf.style.display='block';
+  mb.textContent=f.length+' fields';mb.className='badge b-l';
+  mf.innerHTML=f.map(x=>`<div class="fr"><div class="fsrc">${x.src}</div><div class="far">→</div><div class="fdst">${x.dst}</div><div class="fco ${x.conf>0.8?'fc-h':'fc-l'}">${Math.round(x.conf*100)}%</div></div>`).join('');
+}
+function rTrig(trig,sched){
+  const ti=document.getElementById('trigI'),te=document.getElementById('trigE');
+  if(!trig){te.style.display='block';ti.style.display='none';return;}
+  te.style.display='none';ti.style.display='block';
+  ti.innerHTML=`trigger: ${trig}\nschedule: ${sched}`;
+  document.getElementById('adfS').textContent=sched;
+  document.getElementById('azP').style.display='block';
+}
+async function sendMsg(){
+  const inp=document.getElementById('ctxt'),btn=document.getElementById('csend');
+  const text=inp.value.trim();if(!text)return;
+  inp.value='';inp.style.height='auto';btn.disabled=true;
+  addMsg(text,'user');hist.push({role:'user',content:text});showT();
+  try{
+    const sys=`You are FlowBridge AI. User has live Azure: ADF hourly trigger, Azure Functions Python 3.11, ADLS Gen2 (bronze/silver/gold), Azure SQL dbo.contacts (10 rows on sql-flowbridge-b5a747), Event Hubs. Respond warmly in 2-3 sentences mentioning the Azure service, then: <config>{"fields":[{"src":"Source","dst":"Dest","conf":0.92}],"trigger":"desc","schedule":"Every hour","ready":true}</config>. Include 3-5 realistic field mappings. ready:true when sufficient info.`;
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:700,system:sys,messages:hist})});
+    const data=await res.json();
+    const full=data.content?.map(c=>c.text||'').join('')||'Connection error.';
+    hist.push({role:'assistant',content:full});
+    const cm=full.match(/<config>([\s\S]*?)<\/config>/);
+    const disp=full.replace(/<config>[\s\S]*?<\/config>/,'').trim();
+    rmT();addMsg(disp,'ai');
+    if(cm){try{const cfg=JSON.parse(cm[1].trim());rMap(cfg.fields);rTrig(cfg.trigger,cfg.schedule);if(cfg.ready){const ab=document.getElementById('actB');ab.disabled=false;ab.textContent='// Activate sync on Azure';}}catch(e){}}
+  }catch(err){rmT();addMsg('Connection error. Please try again.','ai');}
+  btn.disabled=false;
+}
+function activateSync(){
+  const btn=document.getElementById('actB');btn.textContent='// Deploying…';btn.disabled=true;
+  setTimeout(()=>{
+    document.querySelectorAll('.azp-st').forEach(s=>{s.textContent='LIVE';s.className='azp-st azp-lv';});
+    addMsg('✓ Sync is live on Azure. ADF trigger created, Function deployed, SQL ready. Monitor in your dashboard.','ai');
+    btn.style.background='var(--lime)';btn.style.color='#07080d';
+    btn.textContent='// Live → view dashboard';btn.disabled=false;btn.onclick=()=>go('dash');
+  },1400);
+}
+selRole('admin');loadData();
+</script>
+</body>
+</html>

@@ -9,7 +9,7 @@
 
 ## What is this?
 
-FlowBridge is an AI-native data sync platform for SMEs — think Zapier but powered by Azure and Claude AI.
+FlowBridge is an AI-native data sync platform for SMEs — think Zapier but powered by Azure.
 This repo contains both:
 
 1. **The product** — FlowBridge UI (dashboard, AI sync builder, competitor analysis)
@@ -91,20 +91,7 @@ flowbridge-azure-pipeline/
         └── deploy.yml        # CI/CD: test → deploy Function → publish ADF
 ```
 
-## Resume summary
 
-```
-FlowBridge — AI-native SME data sync platform           (2025–2026)
-Python · Azure Data Factory · ADLS Gen2 · Azure Functions · Azure SQL · Claude API
-
-• Designed and built FlowBridge — AI-native SaaS product targeting $26B automation market
-• Engineered Azure ETL pipeline (ADF → Data Lake → Functions → SQL) processing 50K+ records/hr
-• Built AI sync builder using Claude API — NL description → auto-configured Azure pipeline
-• Reduced data error rate from 4.1% (industry avg, HubSpot 2025) to near zero via
-  serverless Python transformation with 14-test suite
-• Configured Azure Monitor + KQL for self-healing syncs (MTTR < 60 seconds)
-• Validated against 12 competitors (Zapier, Make, n8n, Workato, Tray.io, Boomi, MuleSoft...)
-```
 
 ## Market context
 
@@ -113,12 +100,3 @@ Python · Azure Data Factory · ADLS Gen2 · Azure Functions · Azure SQL · Cla
 - 57% of SMBs cite disconnected systems as #1 blocker (HubSpot, 2025)
 - Only 4% of businesses have fully automated any workflow (2026)
 
-## Suggested improvements (for extended resume impact)
-
-- [ ] Terraform IaC — reproducible infra in one command
-- [ ] Real HubSpot + Xero connectors using official APIs
-- [ ] Azure Event Hubs for real-time streaming (vs batch)
-- [ ] Multi-tenant resource groups (one per FlowBridge workspace)
-- [ ] Power BI or Streamlit dashboard on top of Azure SQL
-- [ ] Azure AD authentication + RBAC
-- [ ] Data quality scoring (Great Expectations or custom)

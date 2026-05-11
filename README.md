@@ -1,4 +1,4 @@
-FlowBridge — AI Workflow Automation Platform
+**FlowBridge — AI Workflow Automation Platform**
 
 AI-native workflow automation and cloud analytics platform designed for SMEs, built on Microsoft Azure.
 

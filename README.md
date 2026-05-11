@@ -1,11 +1,6 @@
-# FlowBridge — Azure Sync Engine
+FlowBridge — AI Workflow Automation Platform
 
-> **AI-native SME data integration platform** | Product UI + Azure cloud backend
-
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com)
-[![Tests](https://img.shields.io/badge/tests-14%20passing-brightgreen)]()
-[![Python](https://img.shields.io/badge/python-3.11-blue)]()
-[![Azure](https://img.shields.io/badge/azure-data%20factory%20%7C%20functions%20%7C%20sql-0078d4)]()
+AI-native workflow automation and cloud analytics platform designed for SMEs, built on Microsoft Azure.
 
 ## Live Demo
 
